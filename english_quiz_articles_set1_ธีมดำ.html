@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Science Quiz – 5 Second</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+    body { font-family: 'Sarabun', sans-serif; background: #0a0a0a; color: #fff; margin: 0; text-align: center; }
+    .start-screen, .quiz-screen { display: none; padding: 40px; }
+    .start-screen.active, .quiz-screen.active { display: block; }
+    .quiz-box { background: #111; border-radius: 20px; padding: 30px; margin: auto; max-width: 700px; box-shadow: 0 0 20px #03e9f4; }
+    .question { font-size: 1.4em; margin: 20px 0; }
+    .options { display: flex; justify-content: space-around; margin-top: 30px; }
+    .btn { font-size: 1.1em; padding: 15px 25px; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+    .btnA { background: #2962ff; color: white; }
+    .btnB { background: #d50000; color: white; }
+    .btnA:hover { background: #0039cb; }
+    .btnB:hover { background: #9b0000; }
+    .timer { font-size: 1.5em; color: #ffc107; margin-top: 10px; }
+    .score-line { margin-top: 15px; font-size: 1.2em; color: #00e5ff; }
+    .result { margin-top: 20px; font-size: 1.2em; }
+    .emoji { font-size: 3em; margin-top: 10px; }
+    .start-btn { padding: 15px 30px; font-size: 1.2em; background: #03e9f4; color: #000; border: none; border-radius: 10px; cursor: pointer; }
+    .start-btn:hover { background: #00bcd4; }
+  </style>
+</head>
+<body>
+<div class="start-screen active" id="startScreen">
+<h1>⚡ English Quiz – a / an / the ⚡</h1>
+<h2>หัวข้อ: English – Articles (Set 1)</h2>
+<button class="start-btn" onclick="startGame()">เริ่มเกม</button>
+</div>
+<div class="quiz-screen" id="quizScreen">
+<div class="quiz-box">
+<div class="timer" id="timer">⏱️ 5</div>
+<div style="font-size: 0.8em; color: #ccc; margin-top: 5px;">Kru Pai Classroom</div>
+<div class="question" id="question"></div>
+<div class="options">
+<button class="btn btnA" id="btnA" onclick="selectAnswer('A')"></button>
+<button class="btn btnB" id="btnB" onclick="selectAnswer('B')"></button>
+</div>
+<div class="emoji" id="emojiBox"></div>
+<div class="score-line" id="scoreLine"></div>
+<div class="result" id="resultBox"></div>
+<button class="start-btn" id="restartBtn" onclick="location.reload()" style="display:none; margin-top: 30px;">🔁 เริ่มใหม่</button>
+</div>
+</div>
+<script>
+    const questions = [{"question": "ข้อ 1: I saw ___ elephant at the zoo.", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 2: She bought ___ apple from the market.", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 3: We watched ___ movie last night.", "optionA": "a", "optionB": "the", "correct": "B"}, {"question": "ข้อ 4: He wants to be ___ doctor.", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 5: They saw ___ UFO in the sky.", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 6: There is ___ book on the table.", "optionA": "a", "optionB": "the", "correct": "B"}, {"question": "ข้อ 7: I need ___ pen to write.", "optionA": "a", "optionB": "an", "correct": "A"}, {"question": "ข้อ 8: She is reading ___ interesting article.", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 9: He found ___ egg in the basket.", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 10: They visited ___ Eiffel Tower last summer.", "optionA": "a", "optionB": "the", "correct": "B"}, {"question": "ข้อ 11: Can you hand me ___ umbrella?", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 12: She has ___ orange cat.", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 13: ___ moon is very bright tonight.", "optionA": "A", "optionB": "The", "correct": "B"}, {"question": "ข้อ 14: He opened ___ window.", "optionA": "a", "optionB": "the", "correct": "B"}, {"question": "ข้อ 15: Do you have ___ pencil?", "optionA": "a", "optionB": "an", "correct": "A"}, {"question": "ข้อ 16: I saw ___ owl in the tree.", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 17: She went to ___ hospital.", "optionA": "a", "optionB": "the", "correct": "B"}, {"question": "ข้อ 18: I need ___ eraser.", "optionA": "a", "optionB": "an", "correct": "B"}, {"question": "ข้อ 19: He bought ___ new phone.", "optionA": "a", "optionB": "the", "correct": "A"}, {"question": "ข้อ 20: We saw ___ eagle flying above.", "optionA": "a", "optionB": "an", "correct": "B"}];
+    let current = 0;
+    let score = 0;
+    let timer = 5;
+    let interval;
+
+    function startGame() {
+      document.getElementById("startScreen").classList.remove("active");
+      document.getElementById("quizScreen").classList.add("active");
+      showQuestion();
+    }
+
+    function showQuestion() {
+      if (current >= questions.length) {
+        document.getElementById("question").innerText = "จบเกมแล้ว!";
+        document.getElementById("btnA").style.display = "none";
+        document.getElementById("btnB").style.display = "none";
+        document.getElementById("timer").style.display = "none";
+        document.getElementById("emojiBox").innerText = "";
+        document.getElementById("scoreLine").innerText = "";
+        document.getElementById("resultBox").innerText = "คะแนนของคุณ: " + score + "/" + questions.length;
+        document.getElementById("restartBtn").style.display = "inline-block";
+        return;
+      }
+
+      const q = questions[current];
+      document.getElementById("question").innerText = q.question;
+      document.getElementById("btnA").innerText = "A: " + q.optionA;
+      document.getElementById("btnB").innerText = "B: " + q.optionB;
+      document.getElementById("emojiBox").innerText = "";
+      document.getElementById("resultBox").innerText = "";
+      document.getElementById("scoreLine").innerText = "คะแนน: " + score + " / " + questions.length;
+      document.getElementById("timer").innerText = "⏱️ 5";
+      timer = 5;
+      interval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+      timer--;
+      document.getElementById("timer").innerText = "⏱️ " + timer;
+      if (timer === 0) {
+        clearInterval(interval);
+        showFeedback(null);
+        nextQuestion();
+      }
+    }
+
+    function selectAnswer(choice) {
+      clearInterval(interval);
+      const correct = questions[current].correct;
+      if (choice === correct) {
+        score++;
+        showFeedback(true);
+      } else {
+        showFeedback(false);
+      }
+      setTimeout(nextQuestion, 1000);
+    }
+
+    function showFeedback(correct) {
+      if (correct === true) {
+        document.getElementById("emojiBox").innerText = "⚡😄";
+      } else if (correct === false) {
+        document.getElementById("emojiBox").innerText = "⚡😡";
+      } else {
+        document.getElementById("emojiBox").innerText = "⚡⏱️";
+      }
+    }
+
+    function nextQuestion() {
+      current++;
+      showQuestion();
+    }
+  </script>
+<audio id="clickSound" preload="auto">
+<source src="https://www.soundjay.com/buttons/sounds/button-29.mp3" type="audio/mpeg"/>
+</audio>
+<script>
+  const clickSound = document.getElementById("clickSound");
+  function playSound() {
+    clickSound.currentTime = 0;
+    clickSound.play();
+  }
+  function selectAnswer(choice) {
+    playSound();
+    clearInterval(interval);
+    const correct = questions[current].correct;
+    if (choice === correct) {
+      score++;
+      showFeedback(true);
+    } else {
+      showFeedback(false);
+    }
+    setTimeout(nextQuestion, 1000);
+  }
+</script>
+</body>
+</html>
