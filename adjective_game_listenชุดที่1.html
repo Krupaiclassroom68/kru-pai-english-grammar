@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Guess the Adjective!</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(to bottom right, #fff1f1, #ffe066);
+            text-align: center;
+            padding: 20px;
+            color: #333;
+        }
+        .title {
+            font-size: 350%;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ff6699;
+            text-shadow: 2px 2px 5px #ffc0cb;
+        }
+        .box {
+            background-color: #ffffffdd;
+            border-radius: 20px;
+            max-width: 720px;
+            width: 95%;
+            margin: 20px auto;
+            padding: 30px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .question {
+            font-size: 250%;
+            margin-bottom: 20px;
+            color: #444;
+        }
+        .choice {
+            display: block;
+            font-size: 200%;
+            margin: 10px auto;
+            padding: 15px 20px;
+            width: 80%;
+            background-color: #ffccf9;
+            border: 3px solid #ff99cc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+        .choice:hover {
+            background-color: #ffe6f2;
+            transform: scale(1.03);
+        }
+        .result {
+            font-size: 220%;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        button {
+            font-size: 200%;
+            padding: 10px 20px;
+            background-color: #ffd1dc;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #ffc0cb;
+            transform: scale(1.05);
+        }
+        input[type="text"] {
+            font-size: 200%;
+            padding: 10px;
+            border: 2px solid #ff99cc;
+            border-radius: 10px;
+            width: 70%;
+        }
+</style>
+</head>
+<body>
+    <div class="title">🌟 Kru Pai Classroom 🌟</div>
+
+    <div id="startScreen" class="box">
+        <div style="font-size: 300%;">🎧 Guess the Adjective!</div>
+        <p style="font-size: 200%;">Enter your nickname to begin</p>
+        <input type="text" id="playerName" placeholder="Your nickname" style="font-size: 200%; padding: 10px;" />
+        <br><br>
+        <button onclick="startGame()" style="font-size: 200%;">Start Game</button>
+    </div>
+
+    <div id="gameScreen" class="box" style="display:none;">
+        <div class="question" id="questionText">Question</div>
+        <button onclick="speakQuestion()" style="font-size: 200%;">🔊 Read Again</button>
+        <br><br>
+        <div id="choicesContainer"></div>
+        <div class="result" id="resultText"></div>
+    </div>
+
+    <div id="endScreen" class="box" style="display:none;">
+        <div style="font-size: 300%;">🎉 Great job, <span id="playerFinalName"></span>!</div>
+        <p style="font-size: 250%;">You scored <span id="scoreResult"></span> out of 20</p>
+        <button onclick="location.reload()" style="font-size: 200%;">🔁 Play Again</button>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "This word describes something very large in size.", a: "big", c: ["small", "fast", "big", "old"] },
+            { q: "This word describes someone who is not rich.", a: "poor", c: ["young", "tall", "rich", "poor"] },
+            { q: "This word is the opposite of short.", a: "tall", c: ["short", "ugly", "tall", "sad"] },
+            { q: "This word describes someone who is very beautiful.", a: "beautiful", c: ["ugly", "old", "beautiful", "dirty"] },
+            { q: "This word is the opposite of slow.", a: "fast", c: ["cold", "slow", "fast", "bad"] },
+            { q: "This word means not clean.", a: "dirty", c: ["dirty", "clean", "good", "happy"] },
+            { q: "This word describes someone feeling joy.", a: "happy", c: ["sad", "happy", "poor", "cold"] },
+            { q: "This word is the opposite of good.", a: "bad", c: ["bad", "tall", "fast", "beautiful"] },
+            { q: "This word is the opposite of hot.", a: "cold", c: ["new", "cold", "dirty", "slow"] },
+            { q: "This word means very small in size.", a: "small", c: ["rich", "young", "tall", "small"] },
+            { q: "This word means someone has a lot of money.", a: "rich", c: ["poor", "cold", "rich", "sad"] },
+            { q: "This word is the opposite of young.", a: "old", c: ["happy", "old", "new", "clean"] },
+            { q: "This word describes someone who is not tall.", a: "short", c: ["fast", "short", "dirty", "ugly"] },
+            { q: "This word is the opposite of sad.", a: "happy", c: ["slow", "ugly", "happy", "cold"] },
+            { q: "This word is the opposite of dirty.", a: "clean", c: ["dirty", "clean", "slow", "new"] },
+            { q: "This word describes something very old.", a: "old", c: ["new", "old", "young", "big"] },
+            { q: "This word is the opposite of ugly.", a: "beautiful", c: ["ugly", "short", "rich", "beautiful"] },
+            { q: "This word is the opposite of fast.", a: "slow", c: ["fast", "cold", "slow", "hot"] },
+            { q: "This word describes someone who is not happy.", a: "sad", c: ["sad", "tall", "good", "beautiful"] },
+            { q: "This word is the opposite of big.", a: "small", c: ["small", "rich", "hot", "cold"] }
+        ];
+
+        let current = 0;
+        let score = 0;
+        let player = "";
+
+        function startGame() {
+            player = document.getElementById("playerName").value || "Player";
+            document.getElementById("startScreen").style.display = "none";
+            document.getElementById("gameScreen").style.display = "block";
+            showQuestion();
+        }
+
+        function speakQuestion() {
+            const msg = new SpeechSynthesisUtterance(questions[current].q);
+            msg.lang = "en-US";
+            window.speechSynthesis.speak(msg);
+        }
+
+        function showQuestion() {
+            document.getElementById("resultText").innerText = "";
+            document.getElementById("questionText").innerText = `Q${current + 1}: ` + questions[current].q;
+            speakQuestion();
+
+            const choices = questions[current].c;
+            const container = document.getElementById("choicesContainer");
+            container.innerHTML = "";
+
+            choices.forEach(choice => {
+                const btn = document.createElement("button");
+                btn.innerText = choice;
+                btn.className = "choice";
+                btn.onclick = () => checkAnswer(choice);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected) {
+            const correct = questions[current].a;
+            if (selected === correct) {
+                score++;
+                document.getElementById("resultText").innerText = "✅ Correct!";
+            } else {
+                document.getElementById("resultText").innerText = "❌ Try again! The correct answer was: " + correct;
+            }
+
+            setTimeout(() => {
+                current++;
+                if (current < questions.length) {
+                    showQuestion();
+                } else {
+                    endGame();
+                }
+            }, 2000);
+        }
+
+        function endGame() {
+            document.getElementById("gameScreen").style.display = "none";
+            document.getElementById("endScreen").style.display = "block";
+            document.getElementById("playerFinalName").innerText = player;
+            document.getElementById("scoreResult").innerText = score;
+        }
+    </script>
+</body>
+</html>
